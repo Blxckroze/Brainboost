@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainBoost 🧠</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#0ea5e9;--mint:#22c55e;--coral:#f43f5e;
+  --sun:#f59e0b;--purple:#8b5cf6;--navy:#1e293b;
+  --bg:#0f172a;--card:#1e293b;--card2:#273549;--text:#f1f5f9;--muted:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* STARS BG */
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 20% 20%,rgba(14,165,233,.08) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 80%,rgba(139,92,246,.08) 0%,transparent 55%);
+  pointer-events:none;z-index:0;}
+
+/* AUDIO UNLOCK SCREEN */
+#unlockScreen{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  text-align:center;padding:30px;
+}
+#unlockScreen h1{font-family:'Fredoka One',cursive;font-size:2.8rem;color:var(--sun);}
+#unlockScreen p{font-size:1.1rem;color:var(--muted);max-width:320px;line-height:1.6;}
+.start-btn{
+  background:linear-gradient(135deg,var(--sky),var(--purple));
+  border:none;border-radius:50px;padding:18px 48px;
+  font-family:'Fredoka One',cursive;font-size:1.6rem;color:#fff;
+  cursor:pointer;box-shadow:0 8px 30px rgba(14,165,233,.4);
+  transition:transform .2s,box-shadow .2s;
+}
+.start-btn:hover{transform:scale(1.06);box-shadow:0 12px 40px rgba(14,165,233,.5);}
+
+/* HEADER */
+header{position:relative;z-index:10;
+  background:linear-gradient(135deg,#0c4a6e,#4c1d95);
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-radius:0 0 24px 24px;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+header h1{font-family:'Fredoka One',cursive;font-size:1.8rem;color:#fff;}
+header h1 span{color:var(--sun);}
+.stars-pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  border-radius:50px;padding:6px 16px;font-family:'Fredoka One',cursive;
+  font-size:1rem;color:var(--sun);}
+
+/* TABS */
+.tabs{position:relative;z-index:10;display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;background:var(--card);border:2px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:9px 16px;font-family:'Fredoka One',cursive;
+  font-size:.95rem;cursor:pointer;transition:all .2s;color:var(--muted);}
+.tab:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
+.tab.active{color:#fff;}
+.tab[data-tab="spelling"].active{background:var(--sky);border-color:var(--sky);}
+.tab[data-tab="vocab"].active{background:var(--purple);border-color:var(--purple);}
+.tab[data-tab="math"].active{background:var(--mint);border-color:var(--mint);}
+.tab[data-tab="reading"].active{background:var(--coral);border-color:var(--coral);}
+
+/* CONTENT */
+.content{position:relative;z-index:10;padding:18px;max-width:720px;margin:0 auto;}
+.section{display:none;} .section.active{display:block;}
+.sec-title{font-family:'Fredoka One',cursive;font-size:1.6rem;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+
+/* CARD */
+.card{background:var(--card);border-radius:20px;padding:24px 20px;
+  box-shadow:0 4px 24px rgba(0,0,0,.3);margin-bottom:14px;border:1px solid rgba(255,255,255,.05);}
+
+/* PROGRESS */
+.prog-strip{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.prog-label{font-family:'Fredoka One',cursive;font-size:.85rem;color:var(--muted);white-space:nowrap;}
+.prog-bar{flex:1;height:10px;background:rgba(255,255,255,.08);border-radius:50px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:50px;transition:width .5s ease;}
+
+/* BTNS */
+.btn{border:none;border-radius:50px;padding:10px 22px;
+  font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;
+  transition:all .2s;box-shadow:0 2px 10px rgba(0,0,0,.3);}
+.btn:hover{transform:scale(1.05);}
+.btn:active{transform:scale(.97);}
+.btn-sky{background:var(--sky);color:#fff;}
+.btn-mint{background:var(--mint);color:#fff;}
+.btn-coral{background:var(--coral);color:#fff;}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-sun{background:var(--sun);color:var(--navy);}
+.btn-muted{background:rgba(255,255,255,.1);color:var(--text);border:1px solid rgba(255,255,255,.1);}
+
+/* ===== SPELLING ===== */
+.spell-word-area{text-align:center;margin-bottom:20px;}
+.spell-pic{font-size:5rem;display:block;margin-bottom:8px;}
+.spell-clue{font-size:.95rem;color:var(--muted);margin-bottom:6px;}
+.blank-slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+.bslot{width:50px;height:56px;border-radius:12px;
+  border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);
+  font-family:'Fredoka One',cursive;font-size:1.8rem;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--sky);cursor:pointer;transition:all .2s;}
+.bslot.filled{background:rgba(14,165,233,.2);border-color:var(--sky);}
+.bslot.correct{background:rgba(34,197,94,.25);border-color:var(--mint);color:var(--mint);animation:pop .4s;}
+.bslot.wrong{animation:shake .4s;border-color:var(--coral);}
+.key-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;}
+.key{width:48px;height:52px;border-radius:10px;border:2px solid rgba(255,255,255,.1);
+  background:var(--card2);font-family:'Fredoka One',cursive;font-size:1.3rem;
+  cursor:pointer;transition:all .2s;color:var(--text);}
+.key:hover:not(.used){background:var(--sky);color:#fff;border-color:var(--sky);}
+.key.used{opacity:.2;cursor:not-allowed;}
+
+/* ===== VOCAB ===== */
+.vocab-word{font-family:'Fredoka One',cursive;font-size:2.6rem;color:var(--purple);
+  text-align:center;margin-bottom:6px;cursor:pointer;transition:transform .2s;}
+.vocab-word:hover{transform:scale(1.04);}
+.vocab-pos{font-size:.85rem;color:var(--muted);text-align:center;margin-bottom:14px;font-style:italic;}
+.vocab-question{font-size:1rem;color:var(--text);margin-bottom:16px;line-height:1.6;font-weight:700;}
+.vocab-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.vchoice{background:var(--card2);border:2px solid rgba(255,255,255,.08);border-radius:14px;
+  padding:14px 12px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .2s;color:var(--text);text-align:left;line-height:1.4;}
+.vchoice:hover{border-color:var(--purple);transform:translateY(-2px);}
+.vchoice.correct{background:rgba(34,197,94,.2);border-color:var(--mint);color:var(--mint);}
+.vchoice.wrong{background:rgba(244,63,94,.15);border-color:var(--coral);color:var(--coral);}
+
+/* ===== MATH WORD PROBLEMS ===== */
+.math-story{background:var(--card2);border-radius:14px;padding:18px;
+  margin-bottom:16px;font-size:1rem;line-height:1.8;font-weight:700;
+  border-left:4px solid var(--mint);}
+.math-story .highlight{color:var(--sun);font-family:'Fredoka One',cursive;font-size:1.1rem;}
+.math-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.mchoice{background:var(--card2);border:2px solid rgba(255,255,255,.08);border-radius:14px;
+  padding:16px;font-family:'Fredoka One',cursive;font-size:1.5rem;
+  cursor:pointer;transition:all .2s;color:var(--text);text-align:center;}
+.mchoice:hover{border-color:var(--mint);transform:scale(1.04);}
+.mchoice.correct{background:rgba(34,197,94,.2);border-color:var(--mint);color:var(--mint);animation:pop .4s;}
+.mchoice.wrong{background:rgba(244,63,94,.15);border-color:var(--coral);color:var(--coral);animation:shake .4s;}
+.math-scratch{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:10px 14px;color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:1rem;resize:none;outline:none;margin-bottom:10px;}
+.math-scratch::placeholder{color:var(--muted);}
+
+/* ===== READING ===== */
+.passage{background:var(--card2);border-radius:14px;padding:18px;
+  margin-bottom:16px;font-size:.97rem;line-height:1.9;
+  border-left:4px solid var(--coral);max-height:220px;overflow-y:auto;}
+.passage::-webkit-scrollbar{width:4px;}
+.passage::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:4px;}
+.read-question{font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--coral);margin-bottom:14px;}
+.rchoices{display:flex;flex-direction:column;gap:10px;}
+.rchoice{background:var(--card2);border:2px solid rgba(255,255,255,.08);border-radius:14px;
+  padding:14px 16px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;
+  color:var(--text);text-align:left;}
+.rchoice:hover{border-color:var(--coral);transform:translateX(4px);}
+.rchoice.correct{background:rgba(34,197,94,.2);border-color:var(--mint);color:var(--mint);}
+.rchoice.wrong{background:rgba(244,63,94,.15);border-color:var(--coral);color:var(--coral);}
+
+/* TOAST */
+.toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);
+  background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:50px;
+  padding:12px 26px;font-family:'Fredoka One',cursive;font-size:1.2rem;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:1000;opacity:0;
+  transition:all .3s;pointer-events:none;white-space:nowrap;color:var(--text);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* CONFETTI */
+#confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:998;}
+
+/* ANIMS */
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease;}
+
+/* STREAK */
+.streak-badge{display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,var(--sun),var(--coral));color:#fff;
+  border-radius:50px;padding:5px 14px;font-family:'Fredoka One',cursive;font-size:.9rem;margin-left:auto;}
+</style>
+</head>
+<body>
+
+<!-- AUDIO UNLOCK SCREEN -->
+<div id="unlockScreen">
+  <div style="font-size:4rem;">🧠</div>
+  <h1>BrainBoost</h1>
+  <p>Spelling · Vocabulary · Math · Reading<br>Ages 7–12</p>
+  <button class="start-btn" onclick="unlockAudio()">▶ Let's Learn!</button>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<header style="display:none" id="mainHeader">
+  <h1>Brain<span>Boost</span> 🧠</h1>
+  <div class="stars-pill">⭐ <span id="starsDisplay">0</span></div>
+</header>
+
+<div class="tabs" id="mainTabs" style="display:none">
+  <button class="tab active" data-tab="spelling" onclick="switchTab('spelling')">🔤 Spelling</button>
+  <button class="tab" data-tab="vocab" onclick="switchTab('vocab')">📘 Vocab</button>
+  <button class="tab" data-tab="math" onclick="switchTab('math')">🔢 Math</button>
+  <button class="tab" data-tab="reading" onclick="switchTab('reading')">📖 Reading</button>
+</div>
+
+<div class="content" id="mainContent" style="display:none">
+
+  <!-- SPELLING -->
+  <div class="section active" id="sec-spelling">
+    <div class="sec-title" style="color:var(--sky)">🔤 Spelling Challenge</div>
+    <div class="prog-strip">
+      <span class="prog-label">Score</span>
+      <div class="prog-bar"><div class="prog-fill" id="spellingBar" style="background:var(--sky);width:0%"></div></div>
+      <span class="prog-label" id="spellingScore">0</span>
+    </div>
+    <div class="card">
+      <div class="spell-word-area">
+        <span class="spell-pic" id="spellPic"></span>
+        <div class="spell-clue" id="spellClue"></div>
+        <button class="btn btn-sky" style="margin-bottom:16px" onclick="speakSpellWord()">🔊 Hear the Word</button>
+        <div class="blank-slots" id="blankSlots"></div>
+      </div>
+      <div id="keyboardArea"></div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn btn-muted" onclick="clearSpelling()">🗑️ Clear</button>
+        <button class="btn btn-mint" onclick="checkSpelling()">✅ Check</button>
+        <button class="btn btn-sky" onclick="speakSpellWord()">🔊 Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOCAB -->
+  <div class="section" id="sec-vocab">
+    <div class="sec-title" style="color:var(--purple)">📘 Vocabulary</div>
+    <div class="prog-strip">
+      <span class="prog-label">Score</span>
+      <div class="prog-bar"><div class="prog-fill" id="vocabBar" style="background:var(--purple);width:0%"></div></div>
+      <span class="prog-label" id="vocabScore">0</span>
+    </div>
+    <div class="card">
+      <div class="vocab-word" id="vocabWord" onclick="speakVocab()">—</div>
+      <div class="vocab-pos" id="vocabPos"></div>
+      <div style="text-align:center;margin-bottom:14px;">
+        <button class="btn btn-purple" onclick="speakVocab()">🔊 Hear Word</button>
+      </div>
+      <div class="vocab-question" id="vocabQuestion"></div>
+      <div class="vocab-choices" id="vocabChoices"></div>
+    </div>
+  </div>
+
+  <!-- MATH -->
+  <div class="section" id="sec-math">
+    <div class="sec-title" style="color:var(--mint)">🔢 Math Stories</div>
+    <div class="prog-strip">
+      <span class="prog-label">Score</span>
+      <div class="prog-bar"><div class="prog-fill" id="mathBar" style="background:var(--mint);width:0%"></div></div>
+      <span class="prog-label" id="mathScore">0</span>
+    </div>
+    <div class="card">
+      <div class="math-story" id="mathStory"></div>
+      <textarea class="math-scratch" rows="2" placeholder="✏️ Scratch work here..."></textarea>
+      <div class="math-choices" id="mathChoices"></div>
+      <div style="text-align:center;">
+        <button class="btn btn-sky" onclick="speakMath()">🔊 Read the Problem</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- READING -->
+  <div class="section" id="sec-reading">
+    <div class="sec-title" style="color:var(--coral)">📖 Reading</div>
+    <div class="prog-strip">
+      <span class="prog-label">Score</span>
+      <div class="prog-bar"><div class="prog-fill" id="readingBar" style="background:var(--coral);width:0%"></div></div>
+      <span class="prog-label" id="readingScore">0</span>
+    </div>
+    <div class="card">
+      <div class="passage" id="passage"></div>
+      <div style="text-align:center;margin-bottom:14px;">
+        <button class="btn btn-coral" onclick="speakPassage()">🔊 Read Aloud</button>
+        <button class="btn btn-muted" style="margin-left:8px" onclick="stopSpeaking()">⏹ Stop</button>
+      </div>
+      <div class="read-question" id="readQuestion"></div>
+      <div class="rchoices" id="readChoices"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// AUDIO — unlock on first tap, then use reliably
+// ============================================================
+let audioCtx = null;
+let voicesReady = false;
+let selectedVoice = null;
+
+function unlockAudio(){
+  // Create AudioContext on user gesture (required by browsers)
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+
+  // Load voices
+  loadVoices();
+
+  // Show app
+  document.getElementById('unlockScreen').style.display = 'none';
+  document.getElementById('mainHeader').style.display = 'flex';
+  document.getElementById('mainTabs').style.display = 'flex';
+  document.getElementById('mainContent').style.display = 'block';
+
+  // Init first tab
+  newSpelling();
+
+  // Speak welcome after short delay
+  setTimeout(() => speak("Welcome to Brain Boost! Let's learn!"), 400);
+}
+
+function loadVoices(){
+  const tryLoad = () => {
+    const voices = window.speechSynthesis.getVoices();
+    if(voices.length > 0){
+      // Prefer a natural English voice
+      selectedVoice =
+        voices.find(v => v.name.includes('Samantha')) ||
+        voices.find(v => v.name.includes('Google US English')) ||
+        voices.find(v => v.name.includes('Karen')) ||
+        voices.find(v => v.lang === 'en-US' && v.localService) ||
+        voices.find(v => v.lang.startsWith('en-') && v.localService) ||
+        voices.find(v => v.lang.startsWith('en')) ||
+        voices[0];
+      voicesReady = true;
+    }
+  };
+  tryLoad();
+  if(window.speechSynthesis.onvoiceschanged !== undefined){
+    window.speechSynthesis.onvoiceschanged = tryLoad;
+  }
+  // Retry a few times for slow browsers
+  setTimeout(tryLoad, 200);
+  setTimeout(tryLoad, 600);
+  setTimeout(tryLoad, 1200);
+}
+
+function speak(text, rate=0.9){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const doSpeak = () => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = rate;
+    u.pitch = 1.1;
+    if(selectedVoice) u.voice = selectedVoice;
+    window.speechSynthesis.speak(u);
+  };
+  // Small delay prevents cancel race condition
+  setTimeout(doSpeak, 80);
+}
+
+function stopSpeaking(){ window.speechSynthesis.cancel(); }
+
+// ============================================================
+// STATE
+// ============================================================
+let stars = parseInt(localStorage.getItem('bb_stars')||'0');
+let scores = JSON.parse(localStorage.getItem('bb_scores')||'{"spelling":0,"vocab":0,"math":0,"reading":0}');
+document.getElementById('starsDisplay').textContent = stars;
+
+function saveState(){ localStorage.setItem('bb_stars',stars); localStorage.setItem('bb_scores',JSON.stringify(scores)); }
+function addStars(n){ stars+=n; document.getElementById('starsDisplay').textContent=stars; saveState(); }
+function updateBars(){
+  ['spelling','vocab','math','reading'].forEach(k=>{
+    const pct = Math.min(scores[k]*5,100);
+    document.getElementById(k+'Bar').style.width=pct+'%';
+    document.getElementById(k+'Score').textContent=scores[k];
+  });
+}
+updateBars();
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  if(tab==='spelling') newSpelling();
+  if(tab==='vocab') newVocab();
+  if(tab==='math') newMath();
+  if(tab==='reading') newReading();
+}
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-.5); }
+
+// ============================================================
+// CONFETTI
+// ============================================================
+const cc=document.getElementById('confettiCanvas');
+const ccx=cc.getContext('2d');
+let bits=[];
+function launchConfetti(){
+  cc.width=window.innerWidth; cc.height=window.innerHeight;
+  bits=Array.from({length:80},()=>({
+    x:Math.random()*cc.width,y:-20,
+    r:Math.random()*7+3,
+    c:['#f59e0b','#22c55e','#f43f5e','#0ea5e9','#8b5cf6'][Math.floor(Math.random()*5)],
+    vx:(Math.random()-.5)*5,vy:Math.random()*4+2,rot:Math.random()*360
+  }));
+  requestAnimationFrame(animC);
+}
+function animC(){
+  ccx.clearRect(0,0,cc.width,cc.height);
+  bits.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.rot+=5;
+    ccx.save();ccx.translate(b.x,b.y);ccx.rotate(b.rot*Math.PI/180);
+    ccx.fillStyle=b.c;ccx.fillRect(-b.r/2,-b.r/2,b.r,b.r);ccx.restore();});
+  bits=bits.filter(b=>b.y<cc.height);
+  if(bits.length)requestAnimationFrame(animC);
+}
+
+// ============================================================
+// SPELLING — age 7-12 words
+// ============================================================
+const SPELL_WORDS = [
+  {word:'BECAUSE',pic:'💬',clue:'The reason why something happens'},
+  {word:'FRIEND',pic:'🤝',clue:'Someone you enjoy spending time with'},
+  {word:'SCHOOL',pic:'🏫',clue:'A place where you learn'},
+  {word:'PEOPLE',pic:'👥',clue:'More than one person'},
+  {word:'PLACE',pic:'📍',clue:'A location or spot'},
+  {word:'FAMILY',pic:'👨‍👩‍👧',clue:'People related to you'},
+  {word:'ANIMAL',pic:'🦁',clue:'A living creature that is not a plant'},
+  {word:'WATER',pic:'💧',clue:'You drink this every day'},
+  {word:'PLANET',pic:'🪐',clue:'Earth is one of these'},
+  {word:'PURPLE',pic:'🟣',clue:'A color made from red and blue'},
+  {word:'GARDEN',pic:'🌸',clue:'A place where plants grow'},
+  {word:'WINTER',pic:'❄️',clue:'The coldest season'},
+  {word:'BRIDGE',pic:'🌉',clue:'You cross this to get over water'},
+  {word:'CASTLE',pic:'🏰',clue:'A large stone fort where kings lived'},
+  {word:'JUNGLE',pic:'🌴',clue:'A thick forest with lots of animals'},
+  {word:'ROCKET',pic:'🚀',clue:'A vehicle that flies into space'},
+  {word:'LIBRARY',pic:'📚',clue:'A building full of books to borrow'},
+  {word:'ANCIENT',pic:'🏛️',clue:'Very very old'},
+  {word:'JOURNEY',pic:'🗺️',clue:'A long trip or adventure'},
+  {word:'IMAGINE',pic:'💭',clue:'To picture something in your mind'},
+  {word:'VOLCANO',pic:'🌋',clue:'A mountain that can erupt with lava'},
+  {word:'DOLPHIN',pic:'🐬',clue:'A smart ocean animal that jumps'},
+  {word:'EXPLAIN',pic:'🗣️',clue:'To make something clear to others'},
+  {word:'BLOSSOM',pic:'🌺',clue:'A flower that opens on a tree'},
+  {word:'COURAGE',pic:'🦁',clue:'Being brave when things are hard'},
+];
+
+let spellCurrent=null, spellBuilt=[], spellBankIdx=[];
+
+function newSpelling(){
+  spellCurrent=pick(SPELL_WORDS);
+  spellBuilt=Array(spellCurrent.word.length).fill('');
+  spellBankIdx=Array(spellCurrent.word.length).fill(null);
+
+  document.getElementById('spellPic').textContent=spellCurrent.pic;
+  document.getElementById('spellClue').textContent='Clue: '+spellCurrent.clue;
+
+  // Slots
+  const sw=document.getElementById('blankSlots');
+  sw.innerHTML='';
+  spellCurrent.word.split('').forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='bslot'; d.id='bs_'+i;
+    d.onclick=()=>removeSpellSlot(i);
+    sw.appendChild(d);
+  });
+
+  // Keyboard: word letters + extras, shuffled
+  const extras=shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(l=>!spellCurrent.word.includes(l))).slice(0,4);
+  const keys=shuffle([...spellCurrent.word.split(''),...extras]);
+  const ka=document.getElementById('keyboardArea');
+  ka.innerHTML='';
+  const row=document.createElement('div'); row.className='key-row';
+  keys.forEach((l,i)=>{
+    const b=document.createElement('button');
+    b.className='key'; b.id='key_'+i; b.textContent=l; b.dataset.letter=l;
+    b.onclick=()=>pickSpellKey(i,l,b);
+    row.appendChild(b);
+  });
+  ka.appendChild(row);
+
+  setTimeout(()=>speak(`Spell the word: ${spellCurrent.clue}. Press Hear the Word for the answer.`),200);
+}
+
+function speakSpellWord(){ if(spellCurrent) speak(spellCurrent.word, 0.7); }
+
+function pickSpellKey(idx,letter,btn){
+  if(btn.classList.contains('used')) return;
+  const next=spellBuilt.indexOf('');
+  if(next===-1) return;
+  spellBuilt[next]=letter; spellBankIdx[next]=idx;
+  btn.classList.add('used');
+  const s=document.getElementById('bs_'+next);
+  s.textContent=letter; s.classList.add('filled');
+}
+
+function removeSpellSlot(i){
+  if(!spellBuilt[i]) return;
+  const bi=spellBankIdx[i];
+  if(bi!==null){ const b=document.getElementById('key_'+bi); if(b) b.classList.remove('used'); }
+  for(let j=i;j<spellBuilt.length-1;j++){
+    spellBuilt[j]=spellBuilt[j+1]; spellBankIdx[j]=spellBankIdx[j+1];
+    const s=document.getElementById('bs_'+j);
+    s.textContent=spellBuilt[j]||''; spellBuilt[j]?s.classList.add('filled'):s.classList.remove('filled');
+  }
+  const last=spellBuilt.length-1;
+  spellBuilt[last]=''; spellBankIdx[last]=null;
+  const ls=document.getElementById('bs_'+last);
+  ls.textContent=''; ls.classList.remove('filled');
+}
+
+function clearSpelling(){
+  spellBuilt=Array(spellCurrent.word.length).fill('');
+  spellBankIdx=Array(spellCurrent.word.length).fill(null);
+  document.querySelectorAll('.key').forEach(b=>b.classList.remove('used'));
+  spellCurrent.word.split('').forEach((_,i)=>{
+    const s=document.getElementById('bs_'+i);
+    s.textContent=''; s.classList.remove('filled','correct','wrong');
+  });
+}
+
+function checkSpelling(){
+  const built=spellBuilt.join('');
+  if(built.length<spellCurrent.word.length){showToast('Fill all the letters! ✏️');return;}
+  if(built===spellCurrent.word){
+    spellCurrent.word.split('').forEach((_,i)=>document.getElementById('bs_'+i).classList.add('correct'));
+    scores.spelling++; addStars(3); updateBars();
+    showToast('🎉 Correct! +3 Stars!');
+    speak(`Excellent! You spelled ${spellCurrent.word} correctly!`);
+    launchConfetti();
+    setTimeout(newSpelling,2200);
+  } else {
+    spellCurrent.word.split('').forEach((_,i)=>{
+      if(spellBuilt[i]!==spellCurrent.word[i]){
+        const s=document.getElementById('bs_'+i);
+        s.classList.add('wrong');
+        setTimeout(()=>s.classList.remove('wrong'),600);
+      }
+    });
+    speak(`Not quite. Try again! The word is: ${spellCurrent.clue}`);
+    showToast('Almost! Try again 💪');
+  }
+  saveState();
+}
+
+// ============================================================
+// VOCAB — age-appropriate words with context questions
+// ============================================================
+const VOCAB = [
+  {word:'CURIOUS',pos:'adjective',
+   q:'Which sentence uses CURIOUS correctly?',
+   correct:'She was curious about how birds can fly.',
+   wrong:['The curious was very heavy to carry.','He curious the door open slowly.','They bought a curious from the store.']},
+  {word:'ENORMOUS',pos:'adjective',
+   q:'What does ENORMOUS mean?',
+   correct:'Very, very large in size',
+   wrong:['Very small and tiny','A type of dinosaur','Moving very quickly']},
+  {word:'PERSEVERE',pos:'verb',
+   q:'Someone who PERSEVERES does what?',
+   correct:'Keeps trying even when things are hard',
+   wrong:['Gives up when things get difficult','Runs very fast in a race','Speaks loudly in a crowd']},
+  {word:'FREQUENT',pos:'adjective',
+   q:'Something that is FREQUENT happens...',
+   correct:'Often — many times',
+   wrong:['Never or very rarely','Only once in a lifetime','In a very loud way']},
+  {word:'HESITATE',pos:'verb',
+   q:'When you HESITATE you...',
+   correct:'Pause before doing something because you are unsure',
+   wrong:['Run as fast as you can','Shout very loudly','Fall asleep quickly']},
+  {word:'GRACEFUL',pos:'adjective',
+   q:'A GRACEFUL dancer moves in a way that is...',
+   correct:'Smooth, beautiful, and elegant',
+   wrong:['Loud and stomping','Very slow and boring','Silly and clumsy']},
+  {word:'PREDICT',pos:'verb',
+   q:'To PREDICT something is to...',
+   correct:'Say what you think will happen before it does',
+   wrong:['Draw a picture of something','Forget something important','Arrive late to a place']},
+  {word:'VIVID',pos:'adjective',
+   q:'A VIVID memory is one that is...',
+   correct:'Very clear and bright in your mind',
+   wrong:['Blurry and hard to remember','Very scary and frightening','Short and quick']},
+  {word:'COLLABORATE',pos:'verb',
+   q:'When people COLLABORATE they...',
+   correct:'Work together to achieve a goal',
+   wrong:['Argue about everything','Work completely alone','Sleep at the same time']},
+  {word:'ANCIENT',pos:'adjective',
+   q:'An ANCIENT artifact is something that is...',
+   correct:'From a very long time ago in history',
+   wrong:['Brand new and modern','Broken and useless','Soft and comfortable']},
+  {word:'TRANSFORM',pos:'verb',
+   q:'When something TRANSFORMS it...',
+   correct:'Changes completely into something different',
+   wrong:['Stays exactly the same','Gets much smaller','Makes a loud noise']},
+  {word:'ABUNDANT',pos:'adjective',
+   q:'ABUNDANT food means there is...',
+   correct:'More than enough — a very large amount',
+   wrong:['Not enough for everyone','Only a tiny bit left','Food that tastes bad']},
+];
+
+let vocabCurrent=null;
+
+function newVocab(){
+  vocabCurrent=pick(VOCAB);
+  document.getElementById('vocabWord').textContent=vocabCurrent.word;
+  document.getElementById('vocabPos').textContent='('+vocabCurrent.pos+')';
+  document.getElementById('vocabQuestion').textContent=vocabCurrent.q;
+
+  const opts=shuffle([vocabCurrent.correct,...vocabCurrent.wrong.slice(0,3)]);
+  const wrap=document.getElementById('vocabChoices');
+  wrap.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='vchoice'; b.textContent=o;
+    b.onclick=()=>answerVocab(b,o);
+    wrap.appendChild(b);
+  });
+  setTimeout(()=>speak(vocabCurrent.word),200);
+}
+
+function speakVocab(){ if(vocabCurrent) speak(vocabCurrent.word,0.75); }
+
+function answerVocab(btn,choice){
+  document.querySelectorAll('.vchoice').forEach(b=>b.onclick=null);
+  if(choice===vocabCurrent.correct){
+    btn.classList.add('correct');
+    scores.vocab++; addStars(3); updateBars();
+    showToast('📘 Correct! +3 Stars!');
+    speak(`That's right! ${vocabCurrent.word} means: ${vocabCurrent.correct}`);
+    launchConfetti();
+    setTimeout(newVocab,2400);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.vchoice').forEach(b=>{ if(b.textContent===vocabCurrent.correct) b.classList.add('correct'); });
+    speak(`Not quite. The answer is: ${vocabCurrent.correct}`);
+    showToast('Not this time — keep going! 💪');
+    setTimeout(newVocab,2800);
+  }
+  saveState();
+}
+
+// ============================================================
+// MATH WORD PROBLEMS
+// ============================================================
+function makeMath(){
+  const templates=[
+    ()=>{
+      const a=r(10,50),b=r(5,30);
+      return {
+        story:`Maya has <span class="highlight">${a} books</span> on her shelf. She gives <span class="highlight">${b} books</span> to her friend. How many books does Maya have left?`,
+        plain:`Maya has ${a} books and gives away ${b}. How many left?`,
+        answer:a-b, distract:[a+b, a-b+2, a-b-1]
+      };
+    },
+    ()=>{
+      const a=r(2,9),b=r(2,9);
+      return {
+        story:`A baker bakes <span class="highlight">${a} trays</span> of cookies. Each tray has <span class="highlight">${b} cookies</span>. How many cookies are there in total?`,
+        plain:`${a} trays times ${b} cookies each. Total cookies?`,
+        answer:a*b, distract:[a*b+a, a*b-b, a+b]
+      };
+    },
+    ()=>{
+      const total=r(20,80), groups=r(2,5);
+      const share=Math.floor(total/groups);
+      return {
+        story:`<span class="highlight">${total} stickers</span> are shared equally among <span class="highlight">${groups} friends</span>. How many stickers does each friend get?`,
+        plain:`${total} stickers divided by ${groups} friends.`,
+        answer:share, distract:[share+1, share-1, share+2]
+      };
+    },
+    ()=>{
+      const start=r(30,90), add=r(10,40);
+      return {
+        story:`A library has <span class="highlight">${start} books</span>. They receive a donation of <span class="highlight">${add} new books</span>. How many books does the library have now?`,
+        plain:`${start} plus ${add} books.`,
+        answer:start+add, distract:[start+add-1, start+add+1, start+add-5]
+      };
+    },
+    ()=>{
+      const price=r(5,20), items=r(2,6);
+      const total=price*items;
+      return {
+        story:`Each notebook costs <span class="highlight">$${price}</span>. Sam buys <span class="highlight">${items} notebooks</span>. How much does Sam spend in total?`,
+        plain:`${items} notebooks at $${price} each. Total cost?`,
+        answer:total, distract:[total+price, total-price, total+items]
+      };
+    },
+    ()=>{
+      const a=r(100,500), b=r(50,200);
+      return {
+        story:`A train travels <span class="highlight">${a} miles</span> on Monday and <span class="highlight">${b} miles</span> on Tuesday. How far did the train travel in total?`,
+        plain:`${a} plus ${b} miles total.`,
+        answer:a+b, distract:[a+b+10, a+b-10, a-b]
+      };
+    },
+  ];
+  const t=pick(templates)();
+  const opts=shuffle([t.answer,...t.distract.slice(0,3).map(d=>Math.max(0,d))]);
+  return {...t, opts};
+}
+
+let mathCurrent=null;
+function r(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function newMath(){
+  mathCurrent=makeMath();
+  document.getElementById('mathStory').innerHTML=mathCurrent.story;
+  document.querySelector('.math-scratch').value='';
+  const wrap=document.getElementById('mathChoices');
+  wrap.innerHTML='';
+  mathCurrent.opts.forEach(n=>{
+    const b=document.createElement('button');
+    b.className='mchoice'; b.textContent=n;
+    b.onclick=()=>answerMath(b,n);
+    wrap.appendChild(b);
+  });
+}
+
+function speakMath(){ if(mathCurrent) speak(mathCurrent.plain,0.85); }
+
+function answerMath(btn,n){
+  document.querySelectorAll('.mchoice').forEach(b=>b.onclick=null);
+  if(n===mathCurrent.answer){
+    btn.classList.add('correct');
+    scores.math++; addStars(4); updateBars();
+    showToast('🔢 Correct! +4 Stars!');
+    speak(`That's right! The answer is ${mathCurrent.answer}`);
+    launchConfetti();
+    setTimeout(newMath,2200);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.mchoice').forEach(b=>{ if(parseInt(b.textContent)===mathCurrent.answer) b.classList.add('correct'); });
+    speak(`Not quite. The answer is ${mathCurrent.answer}`);
+    showToast(`The answer was ${mathCurrent.answer} 📝`);
+    setTimeout(newMath,2800);
+  }
+  saveState();
+}
+
+// ============================================================
+// READING COMPREHENSION
+// ============================================================
+const PASSAGES = [
+  {
+    text:`The Amazon rainforest is one of the most incredible places on Earth. It covers much of South America and is home to millions of different species of plants and animals. Scientists believe that about 10% of all species on the planet live in the Amazon. The forest is sometimes called "the lungs of the Earth" because its billions of trees absorb carbon dioxide and release oxygen into the air. Many of the medicines we use today were originally discovered from plants found in the rainforest. Unfortunately, large areas of the Amazon are cut down every year for farming and development. Protecting the rainforest is important for the health of the entire planet.`,
+    q:'Why is the Amazon called "the lungs of the Earth"?',
+    correct:'Its trees absorb carbon dioxide and release oxygen.',
+    wrong:['It is shaped like a pair of lungs.','Animals in the Amazon breathe very loudly.','Scientists do their breathing research there.']
+  },
+  {
+    text:`Amelia Earhart was one of the most famous aviators in history. Born in 1897, she became the first woman to fly solo across the Atlantic Ocean in 1932. Earhart loved adventure from a young age and was determined to prove that women could do anything men could do. She set many flying records and inspired thousands of people around the world. In 1937, she attempted to fly around the entire Earth, which had never been done before. Sadly, her plane disappeared over the Pacific Ocean and was never found. Despite her mysterious disappearance, Amelia Earhart remains a symbol of courage and determination to this day.`,
+    q:'What made Amelia Earhart famous?',
+    correct:'She was the first woman to fly solo across the Atlantic Ocean.',
+    wrong:['She invented the airplane.','She was the first person to walk on the moon.','She discovered a new country during her travels.']
+  },
+  {
+    text:`Coral reefs are sometimes called the "rainforests of the sea." They cover less than 1% of the ocean floor but support about 25% of all marine life. Coral reefs are built by tiny sea creatures called coral polyps. These polyps produce hard skeletons that build up over hundreds of years to form the reef. Reefs provide food and shelter for thousands of species including fish, turtles, and seahorses. However, coral reefs are in danger. Rising ocean temperatures cause coral bleaching, where corals turn white and can die. Pollution and overfishing also harm reefs. Scientists around the world are working hard to find ways to protect and restore these vital ecosystems.`,
+    q:'What is coral bleaching?',
+    correct:'When rising temperatures cause corals to turn white and potentially die.',
+    wrong:['When scientists paint corals white to study them.','When fish eat all the color off the coral.','When reefs are cleaned by ocean currents.']
+  },
+  {
+    text:`The ancient Egyptians were remarkable engineers. Without modern tools or machines, they built some of the most impressive structures in human history. The Great Pyramid of Giza, built around 2560 BC, is the oldest of the Seven Wonders of the Ancient World and the only one still standing today. It was built as a tomb for Pharaoh Khufu and took about 20 years to complete. The pyramid contains over 2 million stone blocks, some weighing as much as 80 tons. Historians and engineers still debate exactly how the Egyptians moved and lifted these enormous stones. Despite centuries of research, the Great Pyramid continues to hold many mysteries.`,
+    q:'Why was the Great Pyramid built?',
+    correct:'As a tomb for Pharaoh Khufu.',
+    wrong:['As a place for the public to gather.','To store grain during famines.','As a school for Egyptian children.']
+  },
+  {
+    text:`Animals have developed some amazing ways to survive the cold winter months. Bears go through a process called hibernation, where they sleep deeply for months at a time, living off fat stored in their bodies. Their heart rate and body temperature drop dramatically to save energy. Some birds, like geese, migrate thousands of miles south to find warmer weather and food. Squirrels prepare for winter by burying nuts and seeds in the ground as a food supply. Deer grow thicker coats to stay warm. Even some insects survive winter by producing a kind of natural antifreeze in their blood. Each animal has its own special strategy for making it through the cold season.`,
+    q:'How do bears survive winter?',
+    correct:'They hibernate — sleeping deeply and living off stored body fat.',
+    wrong:['They migrate south like birds.','They bury food underground like squirrels.','They grow a much thicker coat of fur.']
+  }
+];
+
+let readingCurrent=null;
+
+function newReading(){
+  readingCurrent=pick(PASSAGES);
+  document.getElementById('passage').textContent=readingCurrent.text;
+  document.getElementById('readQuestion').textContent='❓ '+readingCurrent.q;
+  const opts=shuffle([readingCurrent.correct,...readingCurrent.wrong]);
+  const wrap=document.getElementById('readChoices');
+  wrap.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='rchoice'; b.textContent=o;
+    b.onclick=()=>answerReading(b,o);
+    wrap.appendChild(b);
+  });
+}
+
+function speakPassage(){ if(readingCurrent) speak(readingCurrent.text, 0.9); }
+
+function answerReading(btn,choice){
+  document.querySelectorAll('.rchoice').forEach(b=>b.onclick=null);
+  if(choice===readingCurrent.correct){
+    btn.classList.add('correct');
+    scores.reading++; addStars(5); updateBars();
+    showToast('📖 Great reading! +5 Stars!');
+    speak(`Excellent! That's correct!`);
+    launchConfetti();
+    setTimeout(newReading,2400);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.rchoice').forEach(b=>{ if(b.textContent===readingCurrent.correct) b.classList.add('correct'); });
+    speak(`Not quite. The correct answer is: ${readingCurrent.correct}`);
+    showToast('Read it again carefully 🔍');
+    setTimeout(newReading,3000);
+  }
+  saveState();
+}
+</script>
+</body>
+</html>
